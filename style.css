@@ -546,3 +546,20 @@ footer {
         cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><circle cx="10" cy="10" r="8" fill="none" stroke="%23ff4e00" stroke-width="2"/></svg>') 10 10, auto;
     }
 }
+
+/* Webring skull image */
+body > a:last-of-type {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-400px);
+    z-index: 100;
+}
+
+body > a:last-of-type img {
+    transition: transform 0.3s ease;
+}
+
+body > a:last-of-type img:hover {
+    transform: scale(1.1);
+}
