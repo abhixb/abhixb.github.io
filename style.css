@@ -5,11 +5,21 @@
 }
 
 :root {
-    --bg: #faf8f5;
-    --text: #1a1a1a;
+    --bg: #0a0a0a;
+    --text: #faf8f5;
     --accent: #ff4e00;
-    --muted: #666;
-    --border: #ddd;
+    --muted: #999;
+    --border: #2a2a2a;
+}
+
+#grid-bg {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    background: #0a0a0a;
 }
 
 body {
@@ -61,6 +71,7 @@ body {
 .profile-photo-left img:not([src=""]) + .photo-placeholder {
     display: none;
 }
+
 
 /* Animated background texture */
 body::before {
@@ -321,6 +332,7 @@ h2::after {
 }
 
 .work-item {
+    position: relative;
     border: 3px solid var(--text);
     padding: 30px;
     background: var(--bg);
@@ -336,6 +348,27 @@ h2::after {
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 15px;
+    transition: color 0.2s;
+}
+
+.work-item-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.work-item video,
+.work-item img {
+    position: relative;
+    z-index: 2;
+}
+
+.work-item:has(.work-item-link) {
+    cursor: pointer;
+}
+
+.work-item:has(.work-item-link):hover h3 {
+    color: var(--accent);
 }
 
 .work-item p {
@@ -545,6 +578,55 @@ footer {
     body {
         cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><circle cx="10" cy="10" r="8" fill="none" stroke="%23ff4e00" stroke-width="2"/></svg>') 10 10, auto;
     }
+}
+
+/* Blog */
+.blog-list {
+    display: grid;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.blog-post {
+    border-left: 4px solid var(--accent);
+    padding: 20px 30px;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.blog-post:hover {
+    transform: translateX(10px);
+}
+
+.blog-date {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 10px;
+}
+
+.blog-post h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.blog-post h3 a {
+    color: var(--text);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.blog-post h3 a:hover {
+    color: var(--accent);
+}
+
+.blog-post p {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
 }
 
 /* Webring skull image */

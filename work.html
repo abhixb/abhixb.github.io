@@ -10,17 +10,14 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="profile-photo-left">
-        <img src="assets/abhi1.png" alt="Abhijeet Bhalerao">
-        <div class="photo-placeholder">Add Photo</div>
-    </div>
-    
+    <canvas id="grid-bg"></canvas>
     <div class="container">
         <header>
             <div class="site-title">abhi.b</div>
             <nav>
                 <a href="index.html">about</a>
                 <a href="work.html">work</a>
+                <a href="blog.html">blog</a>
                 <a href="index.html#contact">contact</a>
             </nav>
         </header>
@@ -53,14 +50,23 @@
                         <source src="assets/tmrlno.mp4" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
+                    <a href="https://github.com/abhixb/proximity" target="_blank" class="work-item-link" aria-label="Proximity on GitHub"></a>
                 </div>
 
-                <div class="work-item"> 
-                    <h3>ESP32-fc</h3>
-                    <p>tried building a flight controller using ESP32</p>
+                <div class="work-item">
+                    <h3>VAE-scratch</h3>
+                    <p>built a variational autoencoder from scratch</p>
+                    <a href="https://github.com/abhixb/vae-scratch" target="_blank" class="work-item-link" aria-label="VAE-scratch on GitHub"></a>
+                </div>
+
+                <div class="work-item">
+                    <h3>Refine</h3>
+                    <p>diffusion policy with 80%+ success rate across three manipulation tasks</p>
+                    <a href="https://github.com/abhixb/Refine" target="_blank" class="work-item-link" aria-label="Refine on GitHub"></a>
                 </div>
             </div>
         </section>
     </div>
+    <script src="assets/grid-bg.js"></script>
 </body>
 </html>
