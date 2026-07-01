@@ -14,12 +14,17 @@
     --muted: #4f6957;
 }
 
+html {
+    background: var(--bg);
+}
+
 body {
     background: var(--bg);
     color: var(--text);
     font-family: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
     font-size: 17px;
     line-height: 1.65;
+    min-height: 100vh;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -211,6 +216,118 @@ strong {
 .blog-post p {
     color: var(--text);
     margin: 0;
+}
+
+/* Blog post */
+.post-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--green);
+    line-height: 1.25;
+    margin-bottom: 6px;
+}
+
+.post-meta {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 36px;
+}
+
+.post h2 {
+    font-size: 21px;
+    margin-top: 40px;
+    margin-bottom: 12px;
+}
+
+.post p {
+    margin-bottom: 16px;
+}
+
+.post ol,
+.post ul {
+    margin: 0 0 16px 22px;
+}
+
+.post li {
+    margin-bottom: 6px;
+}
+
+.post pre {
+    background: #11160f;
+    border: 1px solid var(--muted);
+    border-radius: 4px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+}
+
+.post strong {
+    color: var(--green);
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 32px;
+    font-weight: 700;
+}
+
+.equation {
+    margin: 22px 0 6px;
+    padding: 16px 14px;
+    background: #11160f;
+    border: 1px solid var(--muted);
+    border-left: 3px solid var(--green);
+    border-radius: 4px;
+    overflow-x: auto;
+    color: #cfe9d6;
+}
+
+.eq-note {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.diagram {
+    margin: 28px 0;
+}
+
+.diagram svg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.diffusion-canvas {
+    width: 100%;
+    height: 300px;
+    display: block;
+    border: 1px solid var(--muted);
+    border-radius: 4px;
+    background: #0e120e;
+    cursor: crosshair;
+}
+
+.diffusion-canvas[data-shape="trajectory"] {
+    cursor: grab;
+}
+
+.diffusion-canvas[data-shape="trajectory"]:active {
+    cursor: grabbing;
+}
+
+@media (max-width: 600px) {
+    .diffusion-canvas { height: 240px; }
+}
+
+.diagram figcaption {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 8px;
+    text-align: center;
 }
 
 /* Webring */

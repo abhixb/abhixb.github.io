@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pixels to actions · abhi</title>
+    <link rel="stylesheet" href="style.css?v=16">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <a href="index.html">about</a>
+                <a href="work.html">work</a>
+                <a href="blog.html">blog</a>
+            </nav>
+        </header>
+
+        <a class="back-link" href="blog.html">← blog</a>
+
+        <article class="post">
+            <h1 class="post-title">pixels to actions</h1>
+            <div class="post-meta">june 2026</div>
+
+            <p>This post is about something that does'nt sound significant when you first learn about it, but once u fully realise how it works it makes u go "wait thats actaully inssaneeee".</p>
+
+            <p>diffusion policies: how the same core idea behind generating images ended up being one of the best ways to teach a robotic manipulator how to pick up a cup (and other tasks :D)</p>
+
+            <h2>But what even is a diffusion model?</h2>
+
+            <p>Its basically training a neural network to generate meaningful images starting from random noise.</p>
+
+            <p>how it works: First take an image. Add noise to it, keep adding noise until it looks like pure static. Now train a neural network to reverse that process i.e given any noisy image at step $t$, predict what it looked like at step $t-1$.</p>
+
+            <p>the nice thing is u dont have to add noise one step at a time, theres a closed form that jumps straight to any noise level:</p>
+
+            <div class="equation">$$x_t = \sqrt{\bar{\alpha}_t}\,x_0 + \sqrt{1-\bar{\alpha}_t}\,\epsilon, \qquad \epsilon \sim \mathcal{N}(0, I)$$</div>
+            <p class="eq-note">$x_0$ is the clean image, $\epsilon$ is pure gaussian noise, and $\bar{\alpha}_t$ is just a knob that decides how much of the original survives at step $t$. crank $t$ up and the first term vanishes, so u just get pure noise.</p>
+
+            <p>do this enough times and you have taught the network to "denoise". At inference you start from pure random noise and iteratively denoise your way to a clean image.</p>
+
+            <p>thats it.</p>
+
+            <figure class="diagram">
+                <canvas class="diffusion-canvas" data-shape="face" aria-label="Interactive denoising diagram"></canvas>
+                <figcaption>scroll to denoise (amber = high noise, green = clean). random static slowly assembles into structure, thats the whole idea. mouse over it too :)</figcaption>
+            </figure>
+
+            <p>hence the magic is'nt just one step, its the fact that learning to denoise forces the network to understand the structure of the data. To remove noise for any scene, for example lets say a face, you have to know what faces look like.</p>
+
+            <p>and the actual training objective is almost stupidly simple, u just predict the noise that was added:</p>
+
+            <div class="equation">$$\mathcal{L} = \mathbb{E}_{x_0,\,\epsilon,\,t}\left[\,\lVert\,\epsilon - \epsilon_\theta(x_t, t)\,\rVert^2\,\right]$$</div>
+            <p class="eq-note">$\epsilon_\theta$ is the network. u give it the noisy image $x_t$ and the step $t$, it guesses the noise $\epsilon$, and u just minimise the squared error. thats the whole loss.</p>
+
+            <p>the denoising objective is secretly just a really powerful way to model a distribution.</p>
+
+            <h2>okay but what does any of this have to do with robots?</h2>
+
+            <p>heres where it gets fun.</p>
+
+            <p>when u do imitation learning, basically teaching a robot by showing it demonstrations, the whole thing boils down to one question: given what the robot is seeing right now, what action should it take?</p>
+
+            <p>the obvious move is to just train a network to map observation → action directly. collect a 1000 demos, regress on them, done.</p>
+
+            <p>and this works! ... until it does'nt.</p>
+
+            <p>the catch is that demonstrations are multimodal. imagine showing 10 people the same cup on a table and asking them to pick it up. they'll all come at it from different angles, different wrist rotations, different speeds. and heres the thing, all of them are correct. there is'nt one right answer.</p>
+
+            <p>a normal regression network HATES this. when it sees the same input mapping to a bunch of different outputs it just averages them. so u end up with an action thats a blurry mix of every valid option, which in robot land usually means the arm reaches halfway to the cup and then just ... freezes. confused.</p>
+
+            <p>this is called <strong>mode averaging</strong> and its a proper fundamental problem, not just some tuning issue u can hack around.</p>
+
+            <h2>the diffusion policy insight</h2>
+
+            <p>so chi et al. (2023) asked a really simple question. what if instead of predicting the action directly, we model the distribution over actions, the exact same way diffusion models the distribution over images?</p>
+
+            <p>so instead of</p>
+            <pre>observation → action</pre>
+
+            <p>u get</p>
+            <pre>observation + noisy_action → slightly_less_noisy_action   (repeat T times)</pre>
+
+            <p>and the loss is literally the same one from before, u just swap the image for an action chunk and add the observation as conditioning:</p>
+
+            <div class="equation">$$\mathcal{L} = \mathbb{E}\left[\,\lVert\,\epsilon - \epsilon_\theta(A_t^k,\, k,\, O_t)\,\rVert^2\,\right]$$</div>
+            <p class="eq-note">$A_t^k$ is the noisy action chunk at denoising step $k$, $O_t$ is what the robot sees, and the network predicts the noise on the action. same denoising trick, the observation just steers it.</p>
+
+            <p>at inference u start from pure noise in action space and denoise your way to a clean action, conditioned on what the robot is currently seeing.</p>
+
+            <figure class="diagram">
+                <canvas class="diffusion-canvas" data-shape="trajectory" aria-label="Interactive action denoising diagram"></canvas>
+                <figcaption>same trick, different data: scroll to denoise noise into a smooth action trajectory, plotted in 3d (x/y/z) since the arm lives in 3d. drag the graph to rotate it.</figcaption>
+            </figure>
+
+            <p>and this is the part that made me go "ohhh thats clever". why does it fix mode averaging? because a diffusion model does'nt average the modes, it SAMPLES from them. if there are 3 valid ways to grab the cup the model can represent all 3, and at inference it just picks one depending on the noise it started from.</p>
+
+            <p>u basically went from a network that spits out one answer to a network that understands the entire landscape of reasonable answers. huge.</p>
+
+            <h2>it does'nt predict just one action</h2>
+
+            <p>small thing thats easy to miss, diffusion policy does'nt predict a single action. it predicts an <strong>action chunk</strong>, a little trajectory of the next T actions (like the next 16 timesteps of joint positions).</p>
+
+            <p>why does that matter?</p>
+            <ol>
+                <li><strong>temporal consistency</strong>, the robot is'nt making a fresh independent decision every 10th of a second, its committing to a short plan. way less jittery.</li>
+                <li><strong>it captures structure</strong>, manipulation tasks have clear phases (reach → grasp → lift). a single step prediction cant really capture that, a trajectory can.</li>
+            </ol>
+
+            <p>and the denoising happens over the whole chunk at once so the network learns how consecutive actions relate to each other as part of the process. neat.</p>
+
+            <h2>okay but what about the actual network</h2>
+
+            <p>there are two main backbones people use for the denoiser :</p>
+
+            <p><strong>1D temporal UNet</strong>, treats the action sequence like a 1d signal and runs convolutions across time. great when the horizon is longer and temporal structure actually matters. kinda overkill for very short horizons (≤8 steps) where the receptive field advantage just disappears.</p>
+
+            <p><strong>transformer</strong>, treats each timestep as a token and does attention over the sequence. more flexible, better at long range dependencies, but heavier on compute.</p>
+
+            <p>the observation (what the robot sees) gets injected either through FiLM conditioning or by just prepending observation tokens, depending on which backbone u pick.</p>
+
+            <h2>okay but does it actually work</h2>
+
+            <p>yeah. surprisingly well.</p>
+
+            <p>on the robomimic benchmarks even with a simple 3 layer mlp denoiser :</p>
+            <ul>
+                <li>lift : ~98%</li>
+                <li>can : ~96%</li>
+                <li>square : ~82%</li>
+            </ul>
+
+            <p>square is the hard one because it needs precise peg insertion, which is exactly where multimodality hurts normal behaviour cloning the most. diffusion handles it way better cause it can actually represent the uncertainty in the approach angle instead of averaging it into mush.</p>
+
+            <h2>the whole thing in one line</h2>
+
+            <p>if u forget everything else from this post remember this :</p>
+
+            <p>diffusion works for images because images live on a messy multimodal distribution. robot actions are literally the same. treat action prediction as a denoising problem and u get a model that can represent that messiness instead of collapsing it.</p>
+
+            <p>thats the "great intuition" honestly, its not some clever math hack, its just realising the problem structure is the same. images and robot actions are both high dimensional, structured and multimodal. the tool that works for one just ends up working for the other.</p>
+
+            <h2>so whats next</h2>
+
+            <p>diffusion policy is genuinely great but its not the end of the road. some directions people are pushing rn :</p>
+
+            <ul>
+                <li><strong>consistency models / flow matching</strong>: faster inference for the same quality. ddim already took sampling from 100 steps down to ~10, flow matching pushes it even further.</li>
+                <li><strong>steering diffusion with RL</strong>: instead of just copying demos, using rl to nudge the denoising towards higher reward actions. the noise vectors basically become a latent action space for an rl policy to optimise over. (this ones my favourite ngl)</li>
+                <li><strong>multimodal conditioning</strong>: feeding in force, tactile and language signals as extra conditioning (ForceVLA, pi0, etc).</li>
+            </ul>
+
+            <p>but the core idea, model actions as a distribution not a single point, thats here to stay.</p>
+
+            <p>thanks for reading :D if u wanna nerd out about any of this hit me up.</p>
+        </article>
+
+        <a class="webring" href="https://sravjti.in/webring/" title="SRA Webring">
+            <img src="https://sravjti.in/webring/khopdi.svg" alt="SRA Webring">
+        </a>
+    </div>
+    <script src="assets/diffusion.js?v=4"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</body>
+</html>
