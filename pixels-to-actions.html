@@ -23,7 +23,7 @@
             <h1 class="post-title">pixels to actions</h1>
             <div class="post-meta">june 2026</div>
 
-            <p>This post is about something that does'nt sound significant when you first learn about it, but once u fully realise how it works it makes u go "wait thats actaully inssaneeee".</p>
+            <p>This post is about something that doesn't sound significant when you first learn about it, but once u fully realise how it works it makes u go "wait thats actaully inssaneeee".</p>
 
             <p>diffusion policies: how the same core idea behind generating images ended up being one of the best ways to teach a robotic manipulator how to pick up a cup (and other tasks :D)</p>
 
@@ -64,7 +64,7 @@
 
             <p>the obvious move is to just train a network to map observation → action directly. collect a 1000 demos, regress on them, done.</p>
 
-            <p>and this works! ... until it does'nt.</p>
+            <p>and this works! ... until it doesn't.</p>
 
             <p>the catch is that demonstrations are multimodal. imagine showing 10 people the same cup on a table and asking them to pick it up. they'll all come at it from different angles, different wrist rotations, different speeds. and heres the thing, all of them are correct. there is'nt one right answer.</p>
 
@@ -94,13 +94,13 @@
                 <figcaption>same trick, different data: scroll to denoise noise into a smooth action trajectory, plotted in 3d (x/y/z) since the arm lives in 3d. drag the graph to rotate it.</figcaption>
             </figure>
 
-            <p>and this is the part that made me go "ohhh thats clever". why does it fix mode averaging? because a diffusion model does'nt average the modes, it SAMPLES from them. if there are 3 valid ways to grab the cup the model can represent all 3, and at inference it just picks one depending on the noise it started from.</p>
+            <p>and this is the part that made me go "ohhh thats clever". why does it fix mode averaging? because a diffusion model doesn't average the modes, it SAMPLES from them. if there are 3 valid ways to grab the cup the model can represent all 3, and at inference it just picks one depending on the noise it started from.</p>
 
             <p>u basically went from a network that spits out one answer to a network that understands the entire landscape of reasonable answers. huge.</p>
 
-            <h2>it does'nt predict just one action</h2>
+            <h2>it doesn't predict just one action</h2>
 
-            <p>small thing thats easy to miss, diffusion policy does'nt predict a single action. it predicts an <strong>action chunk</strong>, a little trajectory of the next T actions (like the next 16 timesteps of joint positions).</p>
+            <p>small thing thats easy to miss, diffusion policy doesn't predict a single action. it predicts an <strong>action chunk</strong>, a little trajectory of the next T actions (like the next 16 timesteps of joint positions).</p>
 
             <p>why does that matter?</p>
             <ol>
